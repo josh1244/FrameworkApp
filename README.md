@@ -13,13 +13,15 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - [ ] Fan speed monitoring and control
 - [ ] Battery health and charge limit settings
 - [ ] Power profile switching
+- - [X] Support tuned (Fedoras default as of 41)
+- - [ ] Support ppd
 - [ ] System notifications for hardware events
 - [ ] Multi-model support and detection
 - [ ] Updates?
 
 
 - [X] Detects Model
-- [ ] ectool Installer
+- [X] ectool Installer
 - [ ] Interactive Computer Image
 - [ ] LED controls
 - - [X] Control left, right, power LEDS

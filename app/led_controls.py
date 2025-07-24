@@ -128,7 +128,7 @@ def default_on_led_mode_changed(button, led_name):
         return
     cmd = ["pkexec", "/usr/bin/ectool", "led", led_name, label]
     print("Running:", " ".join(cmd))
-    subprocess.run(cmd)
+    subprocess.run(cmd, check=False)
 
 
 def default_on_led_color_clicked(_button, led_name, color=None):
@@ -136,6 +136,6 @@ def default_on_led_color_clicked(_button, led_name, color=None):
     if color:
         cmd = ["pkexec", "/usr/bin/ectool", "led", led_name, color]
         print("Running:", " ".join(cmd))
-        subprocess.run(cmd)
+        subprocess.run(cmd, check=False)
     else:
         print(f"{led_name} LED custom color button clicked")

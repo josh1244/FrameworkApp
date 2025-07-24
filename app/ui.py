@@ -12,6 +12,7 @@ from app.framework_model import get_framework_model
 from app.image_utils import load_scaled_image
 from app.led_controls import LedControlBox
 from app.power_status import PowerStatusBox
+from app.power_profiles_controller import PowerProfilesController
 
 
 class FrameworkControlApp(Gtk.Window):
@@ -57,9 +58,14 @@ class FrameworkControlApp(Gtk.Window):
 
 
 
+
         # --- Battery Stats ---
         power_status_box = PowerStatusBox()
         vbox.pack_start(power_status_box, True, True, 0)
+
+        # --- Power Profiles ---
+        power_profiles_controller = PowerProfilesController()
+        vbox.pack_start(power_profiles_controller, True, True, 0)
 
         # Set font to Graphik using CSS (try 'Graphik' and set weight)
         css = b"""
