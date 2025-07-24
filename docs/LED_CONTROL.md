@@ -66,7 +66,7 @@ ectool led <name> <query | auto | off | <color> | <color>=<value>...>
 **Example commands:**
 
 ```
-sudo ./ectool led left red=128 green=0 blue=0
+sudo ./ectool led left red
 sudo ./ectool led power auto
 sudo ./ectool led right off
 sudo ./ectool led left query
@@ -81,3 +81,6 @@ Persitent across reboot?
 
 Laptop image with the LEDS that actually change color!
 Get current state and show that for auto
+Show the leds on the laptop image
+show webcam/mic status
+power button backlight

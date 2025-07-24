@@ -2,6 +2,9 @@
 This module defines the LedControlBox widget for controlling the LEDs on the Framework Laptop.
 '''
 
+import os
+import subprocess
+
 # REDO this logic at some point
 
 import gi
@@ -116,13 +119,17 @@ class LedControlBox(Gtk.Box):
 
 def default_on_led_mode_changed(button, led_name):
     '''Default handler for LED mode button click.'''
-    label = button.get_label()
-    print(f"{led_name} LED mode changed to {label}")
+    label = button.get_label().lower()
+    cmd = ["pkexec", "/usr/bin/ectool", "led", led_name, label]
+    print("Running:", " ".join(cmd))
+    subprocess.run(cmd)
 
 
 def default_on_led_color_clicked(_button, led_name, color=None):
     '''Default handler for LED color button click.'''
     if color:
-        print(f"{led_name} LED color set to {color}")
+        cmd = ["pkexec", "/usr/bin/ectool", "led", led_name, color]
+        print("Running:", " ".join(cmd))
+        subprocess.run(cmd)
     else:
         print(f"{led_name} LED custom color button clicked")
