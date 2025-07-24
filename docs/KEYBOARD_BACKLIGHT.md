@@ -30,12 +30,17 @@ The keyboard backlight control allows users to adjust the brightness and select 
 - Supported modes trigger different lighting patterns or behaviors.
 - Brightness changes are applied using `ectool` via `pkexec` for elevated permissions.
 
+
 ## How Changing Daemon Mode Works
-The UI writes the selected mode (e.g., "manual", "auto", "breathe", "responsive") to the file `/tmp/kb_backlight_mode`. The daemon continuously reads this file to check for mode changes. When a new mode is detected, the daemon updates its behavior accordingly.
+The UI writes the selected mode (e.g., "manual", "auto", "breathe", "responsive") to the file `/tmp/kb_backlight_mode`. The daemon continuously reads this file to check for mode changes. When a new mode is detected, the daemon immediately stops the currently running pattern thread and starts a new thread for the selected mode.
 
-For example, if you select "Breathe" mode, the daemon starts a breathing light pattern. If you switch to another mode while the breathing pattern is running, the daemon will only stop the breathing effect after the current cycle (fade in and out) completes. This is because the breathing pattern loop checks for mode changes at each brightness step, but only exits the loop at the end of a cycle. As a result, there may be a short delay before the new mode takes effect if you switch away from "Breathe" while a cycle is in progress.
+This means pattern changes (including breathe, auto, and responsive) now take effect instantly, even if the pattern is in a sleep loop or waiting for input. The daemon uses a `stop_pattern` flag to signal the running pattern thread to exit, ensuring smooth and responsive mode switching.
 
-This design ensures smooth transitions but means that some patterns (like "Breathe") do not stop instantly when the mode is changed.
+### Responsive Pattern Details
+- Uses `evdev` to listen for keypress events from the keyboard input device.
+- When a key is pressed, the backlight turns on and a timer is reset.
+- If no key is pressed for the timeout duration, the backlight turns off.
+- The pattern thread is stopped if the mode changes, so the daemon can switch to another pattern instantly.
 
 ## Example Code Snippet
 ```python

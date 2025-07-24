@@ -54,10 +54,24 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - - [ ] Toggle Mode
 
 
+
 ## Requirements
 - Python 3.7+
 - GTK 3 (PyGObject)
 - Framework laptop (for full feature support)
+
+## Additional Requirements
+
+To use the keyboard backlight daemon with keypress detection, you need:
+
+- Python 3.13
+- Python development headers (Linux package: `python3.13-dev` or `python3.13-devel`)
+- [evdev](https://pypi.org/project/evdev/) Python library
+  - Install with: `pip install evdev`
+
+Other dependencies:
+- GTK 3 and PyGObject for the UI
+- ectool (Framework laptop utility)
 
 ## Installation
 1. **Install dependencies:**

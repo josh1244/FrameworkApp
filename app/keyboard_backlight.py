@@ -4,6 +4,7 @@ using a scale widget. It retrieves the current brightness from ectool and update
 '''
 
 import subprocess
+import threading
 from gi.repository import Gtk, GLib
 
 class KeyboardBacklightBox(Gtk.Box):
@@ -16,31 +17,42 @@ class KeyboardBacklightBox(Gtk.Box):
         label = Gtk.Label(label="Keyboard Backlight:")
         self.pack_start(label, False, False, 0)
 
-        # Get current backlight value from ectool
-        current_value = 0
-        try:
-            cmd = ["pkexec", "/usr/bin/ectool", "pwmgetkblight"]
-            print("Running:", " ".join(cmd))
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            for line in result.stdout.splitlines():
-                if "Current keyboard backlight percent:" in line:
-                    current_value = int(line.split(":")[-1].strip())
-                    break
-        except subprocess.CalledProcessError as e:
-            print("Error occurred:", e)
-
+        # Get current backlight value from ectool (non-blocking)
         self.scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1)
-        self.scale.set_value(current_value)
         self.scale.set_digits(0)
         self.scale.set_size_request(150, -1)
         self.scale.connect("value-changed", self.on_brightness_changed)
         self.pack_start(self.scale, True, True, 0)
 
-        self.value_label = Gtk.Label(label=f"{current_value}%")
+        self.value_label = Gtk.Label(label="0%")
         self.pack_start(self.value_label, False, False, 0)
 
+        def update_scale_from_ectool():
+            def worker():
+                current_value = 0
+                try:
+                    cmd = ["pkexec", "/usr/bin/ectool", "pwmgetkblight"]
+                    print("Running:", " ".join(cmd))
+                    result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=2)
+                    for line in result.stdout.splitlines():
+                        if "Current keyboard backlight percent:" in line:
+                            current_value = int(line.split(":")[-1].strip())
+                            break
+                except subprocess.CalledProcessError as e:
+                    print("Subprocess error occurred:", e)
+                except ValueError as e:
+                    print("Value parsing error occurred:", e)
+                except subprocess.TimeoutExpired as e:
+                    print("Subprocess timeout:", e)
+                GLib.idle_add(self.scale.set_value, current_value)
+                GLib.idle_add(self.value_label.set_text, f"{current_value}%")
+            threading.Thread(target=worker, daemon=True).start()
+        update_scale_from_ectool()
+
+        # ...existing code...
+
         # Combine auto brightness and pattern selection into one button
-        self.modes = ["Manual","Auto", "Breathe", "Responsive"]
+        self.modes = ["Manual","Auto", "Responsive", "Breathe"]
         self.current_mode = 0
         self.mode_button = Gtk.Button(label=self.modes[self.current_mode])
         self.mode_button.connect("clicked", self.on_mode_clicked)
@@ -121,13 +133,18 @@ class KeyboardBacklightBox(Gtk.Box):
         self._debounce_id = GLib.timeout_add(100, self._set_brightness, value)
 
     def _set_brightness(self, value):
-        '''Set the keyboard backlight brightness using ectool.'''
-
-        try:
-            cmd = ["pkexec", "/usr/bin/ectool", "pwmsetkblight", str(value)]
-            print("Running:", " ".join(cmd))
-            subprocess.run(cmd, check=True)
-        except subprocess.CalledProcessError as e:
-            print("Error occurred:", e)
-        self._debounce_id = None
+        '''Set the keyboard backlight brightness using ectool (non-blocking).'''
+        import threading
+        def worker():
+            try:
+                cmd = ["pkexec", "/usr/bin/ectool", "pwmsetkblight", str(value)]
+                print("Running:", " ".join(cmd))
+                subprocess.run(cmd, check=True, timeout=2)
+            except Exception as e:
+                print("Error occurred:", e)
+            GLib.idle_add(self._clear_debounce)
+        threading.Thread(target=worker, daemon=True).start()
         return False  # Only run once
+
+    def _clear_debounce(self):
+        self._debounce_id = None
