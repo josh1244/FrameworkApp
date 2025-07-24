@@ -1,15 +1,20 @@
+'''
+Framework Control App
+This application provides control features for Framework Laptops.
+It displays the laptop model and allows for various controls.
+'''
 
 import os
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
-from framework_model import get_framework_model
-from image_utils import load_scaled_image
+from app.framework_model import get_framework_model
+from app.image_utils import load_scaled_image
 
 
 class FrameworkControlApp(Gtk.Window):
     '''Main application window for Framework Laptop Control.'''
-    
+  
     def __init__(self):
         Gtk.Window.__init__(self, title="Framework Laptop Control")
         self.set_border_width(10)
@@ -20,7 +25,8 @@ class FrameworkControlApp(Gtk.Window):
         self.add(vbox)
 
         # Add Framework logo at the top
-        framework_image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Assets", "framework.png")
+        framework_image_path = self.get_asset_path("framework.png")
+
         logo_img = load_scaled_image(framework_image_path, 200)
         if logo_img:
             vbox.pack_start(logo_img, False, False, 0)
@@ -35,13 +41,12 @@ class FrameworkControlApp(Gtk.Window):
 
         # Add laptop image if available
         if model.image:
-            image_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Assets", model.image)
+            image_path = self.get_asset_path(model.image)
             laptop_img = load_scaled_image(image_path, 320)
             if laptop_img:
                 vbox.pack_start(laptop_img, False, False, 0)
 
         items = [
-            "Image",
             "LED controls",
             "Fan",
             "Battery",
@@ -71,3 +76,7 @@ class FrameworkControlApp(Gtk.Window):
             style_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+
+    def get_asset_path(self, filename):
+        '''Returns the path to the specified asset image.'''
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", filename)
