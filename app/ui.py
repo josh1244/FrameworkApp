@@ -11,6 +11,7 @@ from gi.repository import Gtk
 from app.framework_model import get_framework_model
 from app.image_utils import load_scaled_image
 from app.led_controls import LedControlBox
+from app.power_status import PowerStatusBox
 
 
 class FrameworkControlApp(Gtk.Window):
@@ -55,20 +56,10 @@ class FrameworkControlApp(Gtk.Window):
         vbox.pack_start(leds_hbox, False, False, 0)
 
 
-        items = [
-            "Fan",
-            "Battery",
-            "Power profile",
-            "Plugged In",
-            "On Battery",
-            "Sleep Type"
-        ]
 
-        label_text = "\n".join(items)
-        label = Gtk.Label(label=label_text, xalign=0)
-        label.set_justify(Gtk.Justification.LEFT)
-        label.set_halign(Gtk.Align.START)
-        vbox.pack_start(label, True, True, 0)
+        # --- Battery Stats ---
+        power_status_box = PowerStatusBox()
+        vbox.pack_start(power_status_box, True, True, 0)
 
         # Set font to Graphik using CSS (try 'Graphik' and set weight)
         css = b"""
