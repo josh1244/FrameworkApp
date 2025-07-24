@@ -2,13 +2,11 @@
 This module defines the LedControlBox widget for controlling the LEDs on the Framework Laptop.
 '''
 
-import os
 import subprocess
 
-# REDO this logic at some point
-
-import gi
 from gi.repository import Gtk
+
+# REDO this logic at some point
 
 class LedControlBox(Gtk.Box):
     '''Widget for controlling the LEDs on the Framework Laptop.'''
@@ -48,12 +46,17 @@ class LedControlBox(Gtk.Box):
         # Color Buttons in 2x3 Grid
         color_names = [
             ("Red", "red"),
-            ("Green", "green"),
-            ("Blue", "blue"),
+            ("Amber", "amber"),
             ("Yellow", "yellow"),
             ("White", "white"),
-            ("Amber", "amber")
+            ("Green", "green"),
+            ("Blue", "blue")
         ]
+
+         # Disable the blue button if led_name is 'power'
+        if self.led_name.lower() == "power":
+            color_names.remove(("Blue", "blue"))
+
         color_grid = Gtk.Grid()
         color_grid.set_row_spacing(2)
         color_grid.set_column_spacing(2)
