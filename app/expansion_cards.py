@@ -121,22 +121,23 @@ class ExpansionCards(Gtk.Box):
             self.left_ports_vbox.remove(child)
         for child in list(self.right_ports_vbox.get_children()):
             self.right_ports_vbox.remove(child)
+        
+        port_img_size = 320 / self.ports if self.ports > 0 else 80
+
         # Left ports (even indices)
-        for i in range(len(result)):
+        for i, img_name in enumerate(result):
             if i % 2 == 0:
-                img_name = result[i]
                 if img_name:
                     img_path = get_asset_path(img_name)
-                    port_img = load_scaled_image(img_path, 64)
+                    port_img = load_scaled_image(img_path, 80)
                     if port_img:
                         self.left_ports_vbox.pack_start(port_img, False, False, 0)
         # Right ports (odd indices)
-        for i in range(len(result)):
+        for i, img_name in enumerate(result):
             if i % 2 == 1:
-                img_name = result[i]
                 if img_name:
                     img_path = get_asset_path(img_name)
-                    port_img = load_scaled_image(img_path, 64)
+                    port_img = load_scaled_image(img_path, 80)
                     if port_img:
                         self.right_ports_vbox.pack_start(port_img, False, False, 0)
         # Update laptop image
