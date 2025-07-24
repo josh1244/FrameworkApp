@@ -75,13 +75,11 @@ class KeyboardBacklightDaemon:
                 print('Breathe pattern stopped.')
                 return
             self.set_brightness(i)
-            time.sleep(0.03)
         for i in range(100, -1, -1):
             if getattr(self, 'stop_pattern', False):
                 print('Breathe pattern stopped.')
                 return
             self.set_brightness(i)
-            time.sleep(0.03)
 
     def autobrightness_pattern(self):
         '''Run the auto brightness pattern based on ambient light.'''

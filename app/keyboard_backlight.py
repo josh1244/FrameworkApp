@@ -49,8 +49,6 @@ class KeyboardBacklightBox(Gtk.Box):
             threading.Thread(target=worker, daemon=True).start()
         update_scale_from_ectool()
 
-        # ...existing code...
-
         # Combine auto brightness and pattern selection into one button
         self.modes = ["Manual","Auto", "Responsive", "Breathe"]
         self.current_mode = 0
@@ -67,19 +65,10 @@ class KeyboardBacklightBox(Gtk.Box):
     def on_mode_clicked(self, button):
         '''Callback for mode button click to cycle through modes.'''
 
-        prev_mode = self.modes[self.current_mode]
         self.current_mode = (self.current_mode + 1) % len(self.modes)
         button.set_label(f"Mode: {self.modes[self.current_mode]}")
         ctx = button.get_style_context()
         mode = self.modes[self.current_mode]
-        if mode == "Auto":
-            ctx.add_class("suggested-action")
-            print("Auto Brightness enabled")
-            # TODO: Implement enabling auto brightness (system call or logic)
-        else:
-            ctx.remove_class("suggested-action")
-            print(f"Mode selected: {mode}")
-            # TODO: Implement system call or logic to activate selected pattern
 
         # Handle daemon process for all modes
         daemon_path = "/usr/bin/keyboard_backlight_daemon.py"
@@ -134,14 +123,17 @@ class KeyboardBacklightBox(Gtk.Box):
 
     def _set_brightness(self, value):
         '''Set the keyboard backlight brightness using ectool (non-blocking).'''
-        import threading
         def worker():
             try:
                 cmd = ["pkexec", "/usr/bin/ectool", "pwmsetkblight", str(value)]
                 print("Running:", " ".join(cmd))
                 subprocess.run(cmd, check=True, timeout=2)
-            except Exception as e:
-                print("Error occurred:", e)
+            except subprocess.CalledProcessError as e:
+                print("Subprocess error occurred:", e)
+            except subprocess.TimeoutExpired as e:
+                print("Subprocess timeout:", e)
+            except OSError as e:
+                print("OS error occurred:", e)
             GLib.idle_add(self._clear_debounce)
         threading.Thread(target=worker, daemon=True).start()
         return False  # Only run once

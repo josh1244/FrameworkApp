@@ -67,7 +67,7 @@ To use the keyboard backlight daemon with keypress detection, you need:
 - Python 3.13
 - Python development headers (Linux package: `python3.13-dev` or `python3.13-devel`)
 - [evdev](https://pypi.org/project/evdev/) Python library
-  - Install with: `pip install evdev`
+  - Install with: `pip install evdev; pip3 install evdev`
 
 Other dependencies:
 - GTK 3 and PyGObject for the UI
