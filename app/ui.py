@@ -10,11 +10,12 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from app.framework_model import get_framework_model
 from app.image_utils import load_scaled_image
+from app.led_controls import LedControlBox
 
 
 class FrameworkControlApp(Gtk.Window):
     '''Main application window for Framework Laptop Control.'''
-  
+
     def __init__(self):
         Gtk.Window.__init__(self, title="Framework Laptop Control")
         self.set_border_width(10)
@@ -46,8 +47,15 @@ class FrameworkControlApp(Gtk.Window):
             if laptop_img:
                 vbox.pack_start(laptop_img, False, False, 0)
 
+        # Add three individual LED controls horizontally
+        leds_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        for led_name in ["Left", "Power", "Right"]:
+            led_control = LedControlBox(led_name)
+            leds_hbox.pack_start(led_control, True, True, 0)
+        vbox.pack_start(leds_hbox, False, False, 0)
+
+
         items = [
-            "LED controls",
             "Fan",
             "Battery",
             "Power profile",

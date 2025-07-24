@@ -19,6 +19,7 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - [ ] System notifications for hardware events
 - [ ] Multi-model support and detection
 - [ ] Updates?
+- [ ] graceful exit of app
 
 ## Requirements
 - Python 3.7+
