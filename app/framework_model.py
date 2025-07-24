@@ -6,10 +6,11 @@ import sys
 class FrameworkModel:
     '''Data class for Framework model info'''
 
-    def __init__(self, board_name, name, image=None):
+    def __init__(self, board_name, name, image=None, ports=0):
         self.board_name = board_name
         self.name = name
         self.image = image
+        self.ports = ports
 
 def get_framework_model():
     '''Retrieve the Framework model based on the board name from system files'''
@@ -24,7 +25,8 @@ def get_framework_model():
         "FRANBMCP03": FrameworkModel(
             board_name="FRANBMCP03",
             name="Framework Laptop 13 i5 11th Gen",
-            image="framework-laptop-13.png"
+            image="framework-laptop-13.png",
+            ports=4
         ),
         # Add more mappings as needed
     }
@@ -35,4 +37,4 @@ def get_framework_model():
     print(f"Warning: Unknown board name '{board}'", file=sys.stderr)
 
     # Return a default model with the board name
-    return FrameworkModel(board_name=board, name=f"Unknown ({board})", image=None)
+    return FrameworkModel(board_name=board, name=f"Unknown ({board})", image=None, ports=0)

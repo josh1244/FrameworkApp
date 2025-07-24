@@ -7,12 +7,14 @@ It displays the laptop model and allows for various controls.
 import os
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, GLib
 from app.framework_model import get_framework_model
 from app.image_utils import load_scaled_image
 from app.led_controls import LedControlBox
 from app.power_status import PowerStatusBox
 from app.power_profiles_controller import PowerProfilesController
+from app.expansion_cards import ExpansionCards
+from app.helpers import get_asset_path
 
 
 class FrameworkControlApp(Gtk.Window):
@@ -27,27 +29,34 @@ class FrameworkControlApp(Gtk.Window):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.add(vbox)
 
-        # Add Framework logo at the top
-        framework_image_path = self.get_asset_path("framework.png")
-
+        # Framework logo image
+        framework_image_path = get_asset_path("framework.png")
         logo_img = load_scaled_image(framework_image_path, 200)
         if logo_img:
             vbox.pack_start(logo_img, False, False, 0)
 
         model = get_framework_model()
 
-        # Add model name label between images
+        # Model (Framework Laptop 13 i5 11th Gen)
         model_label = Gtk.Label(label=model.name, xalign=0.5)
         model_label.set_justify(Gtk.Justification.CENTER)
         model_label.set_halign(Gtk.Align.CENTER)
         vbox.pack_start(model_label, False, False, 0)
 
-        # Add laptop image if available
-        if model.image:
-            image_path = self.get_asset_path(model.image)
-            laptop_img = load_scaled_image(image_path, 320)
-            if laptop_img:
-                vbox.pack_start(laptop_img, False, False, 0)
+        # --- Port Images and Laptop Image Section ---
+        # Use ExpansionCardUpdater to generate the expansion card UI block
+        if model.ports > 0:
+            exp_updater = ExpansionCards(model.image, ports=model.ports)
+            # exp_updater.update()
+            # alignment = exp_updater.get_expansion_card_widget(get_asset_path, model)
+            vbox.pack_start(exp_updater, False, False, 0)
+        else:
+            # Add laptop image if available (fallback)
+            if model.image:
+                image_path = get_asset_path(model.image)
+                laptop_img = load_scaled_image(image_path, 320)
+                if laptop_img:
+                    vbox.pack_start(laptop_img, False, False, 0)
 
         # Add three individual LED controls horizontally
         leds_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
@@ -55,7 +64,6 @@ class FrameworkControlApp(Gtk.Window):
             led_control = LedControlBox(led_name)
             leds_hbox.pack_start(led_control, True, True, 0)
         vbox.pack_start(leds_hbox, False, False, 0)
-
 
 
 
@@ -82,6 +90,4 @@ class FrameworkControlApp(Gtk.Window):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
 
-    def get_asset_path(self, filename):
-        '''Returns the path to the specified asset image.'''
-        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", filename)
+    
