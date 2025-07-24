@@ -15,7 +15,7 @@ from app.power_status import PowerStatusBox
 from app.power_profiles_controller import PowerProfilesController
 from app.expansion_cards import ExpansionCards
 from app.helpers import get_asset_path
-
+from app.keyboard_backlight import KeyboardBacklightBox
 
 class FrameworkControlApp(Gtk.Window):
     '''Main application window for Framework Laptop Control.'''
@@ -65,6 +65,9 @@ class FrameworkControlApp(Gtk.Window):
             leds_hbox.pack_start(led_control, True, True, 0)
         vbox.pack_start(leds_hbox, False, False, 0)
 
+        # --- Keyboard Backlight Control ---
+        keyboard_backlight_box = KeyboardBacklightBox()
+        vbox.pack_start(keyboard_backlight_box, False, False, 0)
 
 
         # --- Battery Stats ---

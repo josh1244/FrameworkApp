@@ -129,7 +129,7 @@ class ExpansionCards(Gtk.Box):
             if i % 2 == 0:
                 if img_name:
                     img_path = get_asset_path(img_name)
-                    port_img = load_scaled_image(img_path, 80)
+                    port_img = load_scaled_image(img_path, port_img_size)
                     if port_img:
                         self.left_ports_vbox.pack_start(port_img, False, False, 0)
         # Right ports (odd indices)
@@ -137,7 +137,7 @@ class ExpansionCards(Gtk.Box):
             if i % 2 == 1:
                 if img_name:
                     img_path = get_asset_path(img_name)
-                    port_img = load_scaled_image(img_path, 80)
+                    port_img = load_scaled_image(img_path, port_img_size)
                     if port_img:
                         self.right_ports_vbox.pack_start(port_img, False, False, 0)
         # Update laptop image

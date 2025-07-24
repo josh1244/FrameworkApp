@@ -32,11 +32,11 @@ class LedControlBox(Gtk.Box):
         self.pack_start(label_hbox, False, False, 0)
 
         # On/Off/Auto Button
-        mode_labels = ["On", "Off", "Auto"]
+        mode_labels = ["On", "Auto", "Off"]
 
         mode_btn = Gtk.Button()
         mode_btn.mode_labels = mode_labels
-        mode_btn.current_mode = 2  # Default to Auto
+        mode_btn.current_mode = 1  # Default to Auto
         self.mode_btn = mode_btn
         self.color_btns = {}  # Initialize before _update_mode_btn
         mode_btn.connect("clicked", self._on_mode_btn_clicked)

@@ -39,13 +39,13 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - - [ ] Display on image
 - [ ] Ports
 - - [ ] Which port is connected to power
-- - [ ] Which ports are connected to laptop
+- - [X] Which ports are connected to laptop
 - - [ ] Which ports are in use
 - - [ ] Power draw?
-- - [ ] Images
+- - [X] Images
 - [ ] Show webcam/mic status
 - - [ ] Display on image
-- [ ] Keybaord
+- [ ] Keyboard
 - - [ ] Backlight controls
 - - [ ] Autobrightness
 - [ ] LED and keyboard Scripts

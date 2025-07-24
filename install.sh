@@ -10,25 +10,22 @@ if [ "$(id -u)" -eq 0 ]; then
     exit 1
 fi
 
-# Source and destination
-SRC_PATH="$(realpath ./app/tools/ectool)"
 DEST_DIR="/usr/bin"
-DEST_PATH="$DEST_DIR/ectool"
+# Install ectool
+SRC_ECTOOL="$(realpath ./app/tools/ectool)"
+DEST_ECTOOL="$DEST_DIR/ectool"
+echo "Copying $SRC_ECTOOL to $DEST_ECTOOL..."
+sudo cp "$SRC_ECTOOL" "$DEST_ECTOOL"
+sudo chmod 755 "$DEST_ECTOOL"
+echo "ectool installed to $DEST_ECTOOL."
 
-# Create destination directory if it doesn't exist
-if [ ! -d "$DEST_DIR" ]; then
-    echo "Creating $DEST_DIR..."
-    sudo mkdir -p "$DEST_DIR"
-fi
-
-# Copy ectool
-echo "Copying $SRC_PATH to $DEST_PATH..."
-sudo cp "$SRC_PATH" "$DEST_PATH"
-
-# Ensure it is executable
-sudo chmod 755 "$DEST_PATH"
-
-echo "ectool installed to $DEST_PATH."
+# Install keyboard_backlight_daemon.py
+SRC_DAEMON="$(realpath ./app/tools/keyboard_backlight_daemon.py)"
+DEST_DAEMON="$DEST_DIR/keyboard_backlight_daemon.py"
+echo "Copying $SRC_DAEMON to $DEST_DAEMON..."
+sudo cp "$SRC_DAEMON" "$DEST_DAEMON"
+sudo chmod 755 "$DEST_DAEMON"
+echo "keyboard_backlight_daemon.py installed to $DEST_DAEMON."
 
 
 
