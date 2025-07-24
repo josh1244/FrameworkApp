@@ -10,16 +10,47 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 
 ## Features TODO
 
-- [ ] LED color and brightness controls
 - [ ] Fan speed monitoring and control
 - [ ] Battery health and charge limit settings
 - [ ] Power profile switching
-- [ ] Plugged in/on battery status display
-- [ ] Sleep type selection
 - [ ] System notifications for hardware events
 - [ ] Multi-model support and detection
 - [ ] Updates?
-- [ ] graceful exit of app
+
+
+- [X] Detects Model
+- [ ] ectool Installer
+- [ ] Interactive Computer Image
+- [ ] LED controls
+- - [X] Control left, right, power LEDS
+- - [X] On/Off/Auto
+- - [X] Colors
+- - [ ] Brightness of power button
+- - [ ] Persitent across reboot?
+- - [ ] Get current state and show that for auto
+- - [ ] Show the LEDs on the computer image
+- - [ ] Should detect the state, on, off, auto, when the app loads and set the button 
+- [ ] Battery
+- - [X] Charge Percentage
+- - [X] Charge State
+- - [X] Health
+- - [ ] Display on image
+- [ ] Ports
+- - [ ] Which port is connected to power
+- - [ ] Which ports are connected to laptop
+- - [ ] Which ports are in use
+- - [ ] Power draw?
+- - [ ] Images
+- [ ] Show webcam/mic status
+- - [ ] Display on image
+- [ ] Keybaord
+- - [ ] Backlight controls
+- - [ ] Autobrightness
+- [ ] LED and keyboard Scripts
+- [ ] Sleep Mode
+- - [ ] Display current mode
+- - [ ] Toggle Mode
+
 
 ## Requirements
 - Python 3.7+
@@ -47,6 +78,12 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
    ```
 3. **(Optional) Install Graphik font:**
    - Copy the `fonts/` directory contents to your system fonts folder or use a font manager.
+
+## Install
+Install ectool with:
+```sh
+bash ./install.sh
+```
 
 ## Usage
 Run the application with:

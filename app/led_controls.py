@@ -123,6 +123,9 @@ class LedControlBox(Gtk.Box):
 def default_on_led_mode_changed(button, led_name):
     '''Default handler for LED mode button click.'''
     label = button.get_label().lower()
+    if label == "on":
+        # The app clicks the white button when switching to "On"
+        return
     cmd = ["pkexec", "/usr/bin/ectool", "led", led_name, label]
     print("Running:", " ".join(cmd))
     subprocess.run(cmd)

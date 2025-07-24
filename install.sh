@@ -1,6 +1,6 @@
 #!/bin/bash
-# setup-ectool-group-polkit.sh
-# This script creates an 'ectool' group, adds the current user to it, and sets up a PolicyKit rule for passwordless pkexec access to ectool.
+# install-ectool.sh
+# This script installs the Framework ectool binary to /usr/bin/ectool/ectool with correct permissions.
 
 set -e
 
@@ -10,8 +10,27 @@ if [ "$(id -u)" -eq 0 ]; then
     exit 1
 fi
 
-# Get the absolute path to ectool
-ECTOOL_PATH="$(realpath ./app/tools/ectool)"
+# Source and destination
+SRC_PATH="$(realpath ./app/tools/ectool)"
+DEST_DIR="/usr/bin"
+DEST_PATH="$DEST_DIR/ectool"
+
+# Create destination directory if it doesn't exist
+if [ ! -d "$DEST_DIR" ]; then
+    echo "Creating $DEST_DIR..."
+    sudo mkdir -p "$DEST_DIR"
+fi
+
+# Copy ectool
+echo "Copying $SRC_PATH to $DEST_PATH..."
+sudo cp "$SRC_PATH" "$DEST_PATH"
+
+# Ensure it is executable
+sudo chmod 755 "$DEST_PATH"
+
+echo "ectool installed to $DEST_PATH."
+
+
 
 # Create ectool group if it doesn't exist
 if ! getent group ectool > /dev/null; then
@@ -43,6 +62,6 @@ polkit.addRule(function(action, subject) {
 });
 EOF
 
-echo "PolicyKit rule installed at $RULE_FILE for $ECTOOL_PATH."
+echo "PolicyKit rule installed at $RULE_FILE for /usr/bin/ectool."
 echo "All users in the 'ectool' group can now run ectool via pkexec without a password prompt."
 echo "You may need to log out and back in for the group change to take effect."

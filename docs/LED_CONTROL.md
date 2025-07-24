@@ -71,18 +71,3 @@ sudo ./ectool led power auto
 sudo ./ectool led right off
 sudo ./ectool led left query
 ```
-
-
-## Features for app
-Control left, right, power LEDS
-On/Off/Auto
-Colors
-Persitent across reboot?
-
-Laptop image with the LEDS that actually change color!
-Get current state and show that for auto
-Show the leds on the laptop image
-show webcam/mic status
-power button backlight
-
-Should detect the state, on, off, auto, when the app loads and set the button toggles correctly

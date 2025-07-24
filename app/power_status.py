@@ -60,6 +60,8 @@ class PowerStatusBox(Gtk.Box):
         return True  # Continue calling
 
     def update(self):
+        '''Update the battery status display.'''
+
         battery = get_battery_stats(self.battery_name)
         battery_lines = [
             f"Battery Percentage: {battery['percentage']}%" if battery['percentage'] is not None else "Battery Percentage: Unknown",
@@ -69,5 +71,7 @@ class PowerStatusBox(Gtk.Box):
         self.battery_label.set_text("\n".join(battery_lines))
 
     def set_battery_name(self, battery_name):
+        '''Set a new battery name and update the display.'''
+        
         self.battery_name = battery_name
         self.update()
