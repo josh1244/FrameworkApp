@@ -80,6 +80,9 @@ class ExpansionCards(Gtk.Box):
             for line in lsusb.stdout.splitlines():
                 parts = line.strip().split()
                 label_line = line.strip()
+                # Camera detection
+                if '0bda:5634' in label_line:
+                    print('Framework Laptop Camera found:', label_line)
                 extra_label = None
                 port_idx = None
                 if len(parts) >= 6:

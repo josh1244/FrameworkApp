@@ -3,7 +3,7 @@ This module defines the LedControlBox widget for controlling the LEDs on the Fra
 '''
 
 import subprocess
-
+import inspect
 from gi.repository import Gtk
 
 # REDO this logic at some point
@@ -70,7 +70,11 @@ class LedControlBox(Gtk.Box):
                 self.led_state = color_value
                 self.state_label.set_text(color_value.capitalize())
                 self._set_selected_color_btn(color_value)
-                self.on_color_clicked(b, self.led_name.lower(), color_value)
+                # Call with overlay if supported
+                args = [b, self.led_name.lower(), color_value]
+                if len(inspect.signature(self.on_color_clicked).parameters) > 3:
+                    args.append(self.get_overlay())
+                self.on_color_clicked(*args)
             btn.connect("clicked", on_color_btn_clicked)
             row = idx // 3
             col = idx % 3
@@ -106,7 +110,10 @@ class LedControlBox(Gtk.Box):
             self.led_state = "white"
         else:
             self.led_state = state
-        self.on_mode_changed(btn, self.led_name.lower())
+        args = [btn, self.led_name.lower()]
+        if len(inspect.signature(self.on_mode_changed).parameters) > 2:
+            args.append(self.get_overlay())
+        self.on_mode_changed(*args)
 
     def _set_selected_color_btn(self, selected_color):
         for val, btn in self.color_btns.items():
@@ -118,6 +125,32 @@ class LedControlBox(Gtk.Box):
     def _clear_color_btns(self):
         for btn in self.color_btns.values():
             btn.get_style_context().remove_class("suggested-action")
+
+    def get_overlay(self):
+        '''Add an overlay for this LED.'''
+
+        # Map led_name to overlay image filename
+        overlay_map = {
+            "left": "overlays/framework11-left-led.png",
+            "power": "overlays/framework11-power-led.png",
+            "right": "overlays/framework11-right-led.png"
+        }
+        img_name = overlay_map.get(self.led_name.lower())
+        # Map color names to RGB values (customize as needed)
+        color_map = {
+            "red": (255, 0, 0, 255),
+            "amber": (255, 191, 0, 255),
+            "yellow": (255, 255, 0, 255),
+            "white": (255, 255, 255, 255),
+            "green": (0, 255, 0, 255),
+            "blue": (0, 0, 255, 255),
+            "auto": (0, 0, 0, 0),
+            "off": (0, 0, 0, 0)
+        }
+        color = color_map.get(self.led_state.lower(), (255, 255, 255, 255))
+        if img_name and self.led_state.lower() != "off":
+            return {"name": img_name, "color": color}
+        return None
 
 
 def default_on_led_mode_changed(button, led_name):
