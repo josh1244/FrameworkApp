@@ -15,6 +15,7 @@ class ExpansionCards(Gtk.Box):
 
     def __init__(self, model_image, ports=4, update_interval_ms=5000):
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        self.set_halign(Gtk.Align.CENTER)
         self.model_image = model_image
         self.ports = ports
         self.expansion_card_map = {
@@ -37,9 +38,9 @@ class ExpansionCards(Gtk.Box):
     def _build_ui(self):
         self.left_ports_vbox.set_halign(Gtk.Align.CENTER)
         self.right_ports_vbox.set_halign(Gtk.Align.CENTER)
-        self.pack_start(self.left_ports_vbox, False, False, 0)
-        # Placeholder for laptop image, will be set in update()
         self.laptop_img_widget = Gtk.Box()
+        self.laptop_img_widget.set_halign(Gtk.Align.CENTER)
+        self.pack_start(self.left_ports_vbox, False, False, 0)
         self.pack_start(self.laptop_img_widget, False, False, 0)
         self.pack_start(self.right_ports_vbox, False, False, 0)
 
