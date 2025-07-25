@@ -13,10 +13,9 @@ from app.helpers import get_asset_path
 class ExpansionCards(Gtk.Box):
     '''Widget to display expansion cards and laptop image, with periodic update.'''
 
-    def __init__(self, model_image, ports=4, update_interval_ms=5000):
+    def __init__(self, ports=4, update_interval_ms=5000):
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
         self.set_halign(Gtk.Align.CENTER)
-        self.model_image = model_image
         self.ports = ports
         self.expansion_card_map = {
             "HDMI Expansion Card": "expansion_card_hdmi.png",
@@ -30,18 +29,23 @@ class ExpansionCards(Gtk.Box):
         self.result = ["expansion_card_usb_c.png"] * self.ports
         self.left_ports_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.right_ports_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        self.laptop_img_widget = None
+        self.center_space = Gtk.Box()  # Empty space for image
+        self.center_space.set_halign(Gtk.Align.CENTER)
         self._build_ui()
         self.update()
         GLib.timeout_add(update_interval_ms, self._periodic_update)
 
     def _build_ui(self):
         self.left_ports_vbox.set_halign(Gtk.Align.CENTER)
+        self.left_ports_vbox.set_valign(Gtk.Align.END)
+        self.left_ports_vbox.set_margin_bottom(50)
+
         self.right_ports_vbox.set_halign(Gtk.Align.CENTER)
-        self.laptop_img_widget = Gtk.Box()
-        self.laptop_img_widget.set_halign(Gtk.Align.CENTER)
+        self.right_ports_vbox.set_valign(Gtk.Align.END)
+        self.right_ports_vbox.set_margin_bottom(50)
+
         self.pack_start(self.left_ports_vbox, False, False, 0)
-        self.pack_start(self.laptop_img_widget, False, False, 0)
+        self.pack_start(self.center_space, False, False, 0)
         self.pack_start(self.right_ports_vbox, False, False, 0)
 
     def _periodic_update(self):
@@ -117,12 +121,12 @@ class ExpansionCards(Gtk.Box):
         '''Update UI'''
 
         result = self.result
-        
+
         for child in list(self.left_ports_vbox.get_children()):
             self.left_ports_vbox.remove(child)
         for child in list(self.right_ports_vbox.get_children()):
             self.right_ports_vbox.remove(child)
-        
+
         port_img_size = 320 / self.ports if self.ports > 0 else 80
 
         # Left ports (even indices)
@@ -141,18 +145,8 @@ class ExpansionCards(Gtk.Box):
                     port_img = load_scaled_image(img_path, port_img_size)
                     if port_img:
                         self.right_ports_vbox.pack_start(port_img, False, False, 0)
-        # Update laptop image
-        for child in list(self.laptop_img_widget.get_children()):
-            self.laptop_img_widget.remove(child)
-        laptop_img = None
-        if self.model_image:
-            image_path = get_asset_path(self.model_image)
-            laptop_img = load_scaled_image(image_path, 320)
-        if laptop_img:
-            self.laptop_img_widget.pack_start(laptop_img, False, False, 0)
-        else:
-            self.laptop_img_widget.pack_start(Gtk.Label(label="[No Image]"), False, False, 0)
+
         # Ensure new widgets are shown
         self.left_ports_vbox.show_all()
         self.right_ports_vbox.show_all()
-        self.laptop_img_widget.show_all()
+        self.center_space.show_all()

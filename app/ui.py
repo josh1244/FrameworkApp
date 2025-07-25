@@ -1,3 +1,4 @@
+from app.model_image import ModelImage
 '''
 Framework Control App
 This application provides control features for Framework Laptops.
@@ -46,17 +47,26 @@ class FrameworkControlApp(Gtk.Window):
         # --- Port Images and Laptop Image Section ---
         # Use ExpansionCardUpdater to generate the expansion card UI block
         if model.ports > 0:
-            exp_updater = ExpansionCards(model.image, ports=model.ports)
-            # exp_updater.update()
-            # alignment = exp_updater.get_expansion_card_widget(get_asset_path, model)
+            exp_updater = ExpansionCards(ports=model.ports)
+            # Add the model image to the center_space of ExpansionCards
+            if model.image:
+                # model.overlays = [
+                #     {'name': "overlays/framework11-mic-off.png"},
+                #     {'name': "overlays/framework11-camera-off.png"},
+                #     {'name': "overlays/framework11-caps-led.png"},
+                #     {'name': "overlays/framework11-left-led.png"},
+                #     {'name': "overlays/framework11-right-led.png"},
+                #     {'name': "overlays/framework11-power-led.png", 'color': (0, 255, 0)}
+                # ]
+
+                model_img_widget = ModelImage(model.image, image_size=320, overlays=model.overlays)
+                exp_updater.center_space.pack_start(model_img_widget, False, False, 0)
             vbox.pack_start(exp_updater, False, False, 0)
         else:
             # Add laptop image if available (fallback)
             if model.image:
-                image_path = get_asset_path(model.image)
-                laptop_img = load_scaled_image(image_path, 320)
-                if laptop_img:
-                    vbox.pack_start(laptop_img, False, False, 0)
+                model_img_widget = ModelImage(model.image, image_size=320)
+                vbox.pack_start(model_img_widget, False, False, 0)
 
         # Add three individual LED controls horizontally
         leds_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)

@@ -70,12 +70,12 @@ class KeyboardBacklightDaemon:
     def breathe_pattern(self):
         '''Run the breathing pattern for keyboard backlight.'''
         print('Running breathe pattern...')
-        for i in range(0, 101):
+        for i in range(0, 101, 10):
             if getattr(self, 'stop_pattern', False):
                 print('Breathe pattern stopped.')
                 return
             self.set_brightness(i)
-        for i in range(100, -1, -1):
+        for i in range(100, -1, -10):
             if getattr(self, 'stop_pattern', False):
                 print('Breathe pattern stopped.')
                 return
