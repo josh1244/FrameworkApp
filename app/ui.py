@@ -19,6 +19,7 @@ from app.sample_widget import SampleWidget
 
 
 UPDATE_INTERVAL_MS=5000
+LAPTOP_WIDTH=500
 
 
 class FrameworkControlApp(Gtk.Window):
@@ -97,7 +98,7 @@ class FrameworkControlApp(Gtk.Window):
             ("LEDs", "preferences-desktop-locale-symbolic", ThreeLEDs()),
             ("Keyboard", "input-keyboard-symbolic", KeyboardBacklightBox()),
             ("Expansion", "media-flash-symbolic", ExpansionCards()),
-            ("Sample", "applications-system-symbolic", SampleWidget()),
+            ("Sample", "applications-system-symbolic", SampleWidget(self.model.name, (LAPTOP_WIDTH, 710))), # TODO this is hard coded? TODO Model is not used right now...
         ]
         self.tab_buttons = []
         # Store widgets by name for easy access
@@ -157,7 +158,7 @@ class FrameworkControlApp(Gtk.Window):
         laptop_image_box.set_valign(Gtk.Align.CENTER)
 
         if self.model.image:
-            self.model_img_widget = ModelImage(self.model.image, image_size=500)
+            self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH)
             self.model_img_parent = laptop_image_box
             laptop_image_box.pack_start(self.model_img_widget, False, False, 0)
         else:
@@ -169,6 +170,9 @@ class FrameworkControlApp(Gtk.Window):
 
         # Now pack main_and_image_container into tab_and_content_container
         tab_and_content_container.pack_start(main_and_image_container, True, True, 0)
+
+        # Update at init
+        self.update_loop()
 
         # Start update loop
         GLib.timeout_add(UPDATE_INTERVAL_MS, self._periodic_update)
@@ -185,8 +189,11 @@ class FrameworkControlApp(Gtk.Window):
             try:
                 widget.update()
                 self.widgets_data[name] = getattr(widget, 'data', None)
-            except Exception as e:
-                print(f"Error updating widget {name}: {e}")
+            except NotImplementedError as e:
+                print(f"{name} has not implemented update! {e}")
+                self.widgets_data[name] = None
+            except (AttributeError, RuntimeError) as e:
+                print(f"{name} does not use the Widget Class! {e}")
                 self.widgets_data[name] = None
 
         # Update the visual for the currently visible widget
@@ -197,7 +204,17 @@ class FrameworkControlApp(Gtk.Window):
             except Exception as e:
                 print(f"Error updating visual for widget {visible_name}: {e}")
 
-        # Optionally, update laptop image overlays here if needed
+        # Update laptop image overlays
+        overlays = self.get_all_widget_overlays()
+        # Recreate the model image widget with overlays and update the UI
+        if self.model.image and self.model_img_parent:
+            # Remove the old image widget if it exists
+            if self.model_img_widget:
+                self.model_img_parent.remove(self.model_img_widget)
+            # Create new ModelImage with overlays
+            self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH, overlays=overlays)
+            self.model_img_parent.pack_start(self.model_img_widget, False, False, 0)
+            self.model_img_parent.show_all()
 
     # Sidebar tab button function
     def on_tab_clicked(self, _btn, idx, name):
@@ -210,3 +227,17 @@ class FrameworkControlApp(Gtk.Window):
             b.set_active(i == idx)
             b.handler_unblock(handler_id)
         self.widget_stack.set_visible_child_name(name)
+
+    def get_all_widget_overlays(self):
+        """
+        Parse all widgets' data and collect overlay information.
+        Expects each widget's data (if present) to have an 'overlays' key (list or None).
+        Returns a list of overlays from all widgets.
+        """
+        overlays = []
+        for name, data in self.widgets_data.items():
+            if data and isinstance(data, dict) and 'overlays' in data and data['overlays']:
+                overlays.extend(data['overlays'])
+
+        print(overlays)
+        return overlays

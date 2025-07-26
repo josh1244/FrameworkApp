@@ -37,9 +37,12 @@ class ModelImage(Gtk.Box):
             overlay.add(Gtk.Label(label="[No Image]"))
         # Add overlays with optional color filter
         for overlay_info in self.overlays:
+            # "overlays": [{"name": "time", "path": "overlays/framework11-time.png", "color": None}]
+
             overlay_name = overlay_info.get('name')
+            overlay_path = overlay_info.get('path')
             color = overlay_info.get('color')
-            overlay_path = get_asset_path(overlay_name)
+            overlay_path = get_asset_path(overlay_path)
             if color:
                 overlay_img_widget = colorize_image(overlay_path, self.image_size, color)
             else:
