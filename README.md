@@ -30,7 +30,7 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - - [ ] Brightness of power button
 - - [ ] Persitent across reboot?
 - - [ ] Get current state and show that for auto
-- - [ ] Show the LEDs on the computer image
+- - [x] Show the LEDs on the computer image
 - - [ ] Should detect the state, on, off, auto, when the app loads and set the button
 - [ ] Battery
 - - [x] Charge Percentage
@@ -46,14 +46,16 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - [ ] Show webcam/mic status
 - - [ ] Display on image
 - [ ] Keyboard
-- - [ ] Backlight controls
+- - [x] Backlight controls
 - - [ ] Autobrightness
+- - [x] Patterns
 - [ ] LED and keyboard Scripts
 - [ ] Sleep Mode
 - - [ ] Display current mode
 - - [ ] Toggle Mode
 - [ ] Show OS on display on image
 - - [ ] Brightness should change it
+- [ ] App is very slow now with image updating. I need to redo the architecture, so there is a single update loop with variable update timer. It needs to be more modular and less spaghetti
 
 ## Requirements
 

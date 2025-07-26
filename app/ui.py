@@ -9,106 +9,55 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 from app.framework_model import get_framework_model
 from app.image_utils import load_scaled_image
-from app.led_controls import LedControlBox
-from app.power_status import PowerStatusBox
 from app.power_profiles_controller import PowerProfilesController
 from app.expansion_cards import ExpansionCards
 from app.helpers import get_asset_path
 from app.model_image import ModelImage
 from app.keyboard_backlight import KeyboardBacklightBox
+from app.three_leds import ThreeLEDs
+from app.sample_widget import SampleWidget
+
+
+UPDATE_INTERVAL_MS=5000
+
 
 class FrameworkControlApp(Gtk.Window):
-    def led_callback_wrapper(self, *args, **kwargs):
-        # Call the default handler first
-        from app.led_controls import default_on_led_mode_changed, default_on_led_color_clicked
-        # Determine which handler to call based on args
-        if len(args) > 0 and hasattr(args[0], 'get_label'):
-            # Mode button
-            default_on_led_mode_changed(*args[:2])
-        elif len(args) > 2:
-            # Color button
-            default_on_led_color_clicked(*args[:3])
-        # Now update overlays
-        self.on_overlay_widget_changed(*args, **kwargs)
-    '''Main application window for Framework Laptop Control.'''
-
+    '''The class that defines the application and calls all the widgets'''
+    
     def __init__(self):
         '''Initialize the Framework Control App window.'''
+
+        # Set up the window
 
         Gtk.Window.__init__(self, title="Framework Laptop Control")
         self.set_border_width(10)
         self.set_default_size(400, 300)
 
-        # Use a vertical box to hold logo, image, and label
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        self.add(vbox)
 
-        # Framework logo image
-        framework_image_path = get_asset_path("framework.png")
-        logo_img = load_scaled_image(framework_image_path, 200)
-        if logo_img:
-            vbox.pack_start(logo_img, False, False, 0)
-
-        self.model = get_framework_model()
-        self.model.overlays = []
-        self.overlay_widgets = []
-        self.model_img_widget = None
-        self.model_img_parent = None
-
-        # Model (Framework Laptop 13 i5 11th Gen)
-        model_label = Gtk.Label(label=self.model.name, xalign=0.5)
-        model_label.set_justify(Gtk.Justification.CENTER)
-        model_label.set_halign(Gtk.Align.CENTER)
-        vbox.pack_start(model_label, False, False, 0)
-
-        # --- Port Images and Laptop Image Section ---
-        # Use ExpansionCardUpdater to generate the expansion card UI block
-        if self.model.ports > 0:
-            exp_updater = ExpansionCards(ports=self.model.ports)
-            # Add the model image to the center_space of ExpansionCards
-            if self.model.image:
-                self.model_img_widget = ModelImage(self.model.image, image_size=320, overlays=self.model.overlays)
-                self.model_img_parent = exp_updater.center_space
-                self.model_img_parent.pack_start(self.model_img_widget, False, False, 0)
-            vbox.pack_start(exp_updater, False, False, 0)
-        else:
-            # Add laptop image if available (fallback)
-            if self.model.image:
-                self.model_img_widget = ModelImage(self.model.image, image_size=320)
-                self.model_img_parent = vbox
-                vbox.pack_start(self.model_img_widget, False, False, 0)
-
-        # Add three individual LED controls horizontally
-        leds_hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
-        self.led_controls = []
-        for led_name in ["Left", "Power", "Right"]:
-            led_control = LedControlBox(
-                led_name,
-                on_mode_changed=self.led_callback_wrapper,
-                on_color_clicked=self.led_callback_wrapper
-            )
-            self.led_controls.append(led_control)
-            leds_hbox.pack_start(led_control, True, True, 0)
-        vbox.pack_start(leds_hbox, False, False, 0)
-
-        # --- Keyboard Backlight Control ---
-        self.keyboard_backlight_box = KeyboardBacklightBox()
-        vbox.pack_start(self.keyboard_backlight_box, False, False, 0)
-        self.overlay_widgets.append(self.keyboard_backlight_box)
-
-        # --- Battery Stats ---
-        power_status_box = PowerStatusBox()
-        vbox.pack_start(power_status_box, True, True, 0)
-
-        # --- Power Profiles ---
-        power_profiles_controller = PowerProfilesController()
-        vbox.pack_start(power_profiles_controller, True, True, 0)
-
-        # Set font to Graphik using CSS (try 'Graphik' and set weight)
+        # Set font to Graphik using CSS (try 'Graphik' and set weight), and style sidebar
         css = b"""
         * {
             font-family: 'Graphik', sans-serif;
             font-weight: 500;
+        }
+        .sidebar-tabs {
+            background: #e0e0e0;
+            border-radius: 8px;
+            padding: 10px 0;
+        }
+        .sidebar-tab-btn {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            transition: background 0.2s;
+        }
+        .sidebar-tab-btn:hover {
+            background: #cccccc;
+        }
+        .sidebar-tab-btn:checked, .sidebar-tab-btn:active {
+            background: #b0b0b0;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         """
         style_provider = Gtk.CssProvider()
@@ -118,23 +67,146 @@ class FrameworkControlApp(Gtk.Window):
             style_provider,
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
-    def on_overlay_widget_changed(self, *args, **kwargs):
-        '''Callback for when an overlay widget changes.
-        This updates the model image with the new overlays.'''
 
-        # Gather overlays from all widgets that provide get_overlay()
-        overlays = []
-        for widget in self.led_controls + self.overlay_widgets:
-            if hasattr(widget, "get_overlay"):
-                overlay = widget.get_overlay()
-                if overlay:
-                    overlays.append(overlay)
-        self.model.overlays = overlays
-        # Remove old model image widget
-        if self.model_img_widget and self.model_img_parent:
-            self.model_img_parent.remove(self.model_img_widget)
-        # Add new model image widget with updated overlays
-        self.model_img_widget = ModelImage(self.model.image, image_size=320, overlays=overlays)
-        self.model_img_parent.pack_start(self.model_img_widget, False, False, 0)
-        self.model_img_parent.show_all()
+        # Figure out the laptop stuff
+        self.model = get_framework_model()
+        self.model.overlays = []
+        self.overlay_widgets = []
+        self.model_img_widget = None
+        self.model_img_parent = None
+        self.current_widget = None
 
+
+
+        # Create a horizontal box to split sidebar (tabs) and main content (image)
+        tab_and_content_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        self.add(tab_and_content_container)
+
+        # Sidebar: vertical box for tab buttons with icons only, grey background
+        tab_sidebar = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        tab_sidebar.set_halign(Gtk.Align.FILL)
+        tab_sidebar.set_valign(Gtk.Align.FILL)
+        tab_sidebar.set_size_request(0, -1) # TODO: Check this
+        tab_sidebar.get_style_context().add_class("sidebar-tabs")
+
+
+        # Define the tabs here (name, icon, widget)
+        # All widgets should inherit from WidgetTemplate
+        tab_items = [
+            ("Power", "battery-full-symbolic", PowerProfilesController()),
+            ("LEDs", "preferences-desktop-locale-symbolic", ThreeLEDs()),
+            ("Keyboard", "input-keyboard-symbolic", KeyboardBacklightBox()),
+            ("Expansion", "media-flash-symbolic", ExpansionCards()),
+            ("Sample", "applications-system-symbolic", SampleWidget()),
+        ]
+        self.tab_buttons = []
+        # Store widgets by name for easy access
+        self.widgets = {name: widget for name, _icon, widget in tab_items}
+        # Store widget data here for access by ui.py and others
+        self.widgets_data = {name: None for name, _icon, _widget in tab_items}
+
+
+
+        tab_and_content_container.pack_start(tab_sidebar, False, False, 0)
+
+        # Split main content and laptop side by side
+        main_and_image_container = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+
+        # Main content:
+        main_content_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+
+        # Framework logo image
+        framework_image_path = get_asset_path("framework.png")
+        logo_img = load_scaled_image(framework_image_path, 200)
+        if logo_img:
+            main_content_container.pack_start(logo_img, False, False, 0)
+
+        # Model Name (ex. Framework Laptop 13 i5 11th Gen)
+        model_label = Gtk.Label(label=self.model.name, xalign=0.5)
+        model_label.set_justify(Gtk.Justification.CENTER)
+        model_label.set_halign(Gtk.Align.CENTER)
+        main_content_container.pack_start(model_label, False, False, 0)
+
+        # Stack for widgets
+        self.widget_stack = Gtk.Stack()
+        for name, icon_name, widget in tab_items:
+            self.widget_stack.add_titled(widget, name, name)
+        main_content_container.pack_start(self.widget_stack, True, True, 0)
+
+        # Add the tabs to sidebar
+        self.tab_buttons = []
+        self.tab_handlers = []
+
+        for idx, (name, icon_name, widget) in enumerate(tab_items):
+            tab_button = Gtk.ToggleButton()
+            tab_button.set_relief(Gtk.ReliefStyle.NONE)
+            tab_button.get_style_context().add_class("sidebar-tab-btn")
+            image = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.DIALOG)
+            tab_button.add(image)
+            tab_button.set_active(idx == 0)  # First tab active by default
+            handler_id = tab_button.connect("toggled", self.on_tab_clicked, idx, name)
+            self.tab_buttons.append(tab_button)
+            self.tab_handlers.append(handler_id)
+            tab_sidebar.pack_start(tab_button, False, False, 0)
+
+        self.widget_stack.set_visible_child_name(tab_items[0][0])  # Show first tab by default
+
+        # Laptop Image
+        laptop_image_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        laptop_image_box.set_halign(Gtk.Align.CENTER)
+        laptop_image_box.set_valign(Gtk.Align.CENTER)
+
+        if self.model.image:
+            self.model_img_widget = ModelImage(self.model.image, image_size=500)
+            self.model_img_parent = laptop_image_box
+            laptop_image_box.pack_start(self.model_img_widget, False, False, 0)
+        else:
+            laptop_image_box.pack_start(Gtk.Label(label="[No Image]"), False, False, 0)
+ 
+        # Pack both main_content_container and laptop_image_box into main_and_image_container
+        main_and_image_container.pack_start(main_content_container, True, True, 0)
+        main_and_image_container.pack_start(laptop_image_box, False, False, 0)
+
+        # Now pack main_and_image_container into tab_and_content_container
+        tab_and_content_container.pack_start(main_and_image_container, True, True, 0)
+
+        # Start update loop
+        GLib.timeout_add(UPDATE_INTERVAL_MS, self._periodic_update)
+
+    def _periodic_update(self):
+        self.update_loop()
+        return True
+
+    # Update loop function
+    def update_loop(self):
+        '''A single update loop that gets all the info'''
+        # Update all widgets and store their data
+        for name, widget in self.widgets.items():
+            try:
+                widget.update()
+                self.widgets_data[name] = getattr(widget, 'data', None)
+            except Exception as e:
+                print(f"Error updating widget {name}: {e}")
+                self.widgets_data[name] = None
+
+        # Update the visual for the currently visible widget
+        visible_name = self.widget_stack.get_visible_child_name()
+        if visible_name and visible_name in self.widgets:
+            try:
+                self.widgets[visible_name].update_visual()
+            except Exception as e:
+                print(f"Error updating visual for widget {visible_name}: {e}")
+
+        # Optionally, update laptop image overlays here if needed
+
+    # Sidebar tab button function
+    def on_tab_clicked(self, _btn, idx, name):
+        ''' When click on a sidebar tab, change the current_widget'''
+
+        # Prevent recursion by blocking handlers
+        for i, b in enumerate(self.tab_buttons):
+            handler_id = self.tab_handlers[i]
+            b.handler_block(handler_id)
+            b.set_active(i == idx)
+            b.handler_unblock(handler_id)
+        self.widget_stack.set_visible_child_name(name)
