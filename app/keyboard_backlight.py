@@ -32,7 +32,9 @@ class KeyboardBacklightBox(Gtk.Box):
                 current_value = 0
                 try:
                     cmd = ["pkexec", "/usr/bin/ectool", "pwmgetkblight"]
-                    print("Running:", " ".join(cmd))
+                    # print("Running:", " ".join(cmd))
+                    print("[KeyboardBacklightBox] Getting current keyboard backlight value...")
+
                     result = subprocess.run(cmd, capture_output=True, text=True, check=True, timeout=2)
                     for line in result.stdout.splitlines():
                         if "Current keyboard backlight percent:" in line:

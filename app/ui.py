@@ -14,9 +14,9 @@ from app.expansion_cards import ExpansionCards
 from app.helpers import get_asset_path
 from app.model_image import ModelImage
 from app.keyboard_backlight import KeyboardBacklightBox
-from app.three_leds import ThreeLEDs
 from app.sample_widget import SampleWidget
-
+from app.sleep_mode_widget import SleepModeWidget
+from app.led_widget import LedWidget
 
 UPDATE_INTERVAL_MS=5000
 LAPTOP_WIDTH=500
@@ -95,9 +95,10 @@ class FrameworkControlApp(Gtk.Window):
         # All widgets should inherit from WidgetTemplate
         tab_items = [
             ("Power", "battery-full-symbolic", PowerProfilesController()),
-            ("LEDs", "preferences-desktop-locale-symbolic", ThreeLEDs()),
-            ("Keyboard", "input-keyboard-symbolic", KeyboardBacklightBox()),
-            ("Expansion", "media-flash-symbolic", ExpansionCards()),
+            # ("Keyboard", "input-keyboard-symbolic", KeyboardBacklightBox()),
+            # ("Expansion", "media-flash-symbolic", ExpansionCards()),
+            ("Sleep", "power-profile-power-saver-symbolic", SleepModeWidget()),
+            ("LEDs", "dialog-information-symbolic", LedWidget()),
             ("Sample", "applications-system-symbolic", SampleWidget(self.model.name, (LAPTOP_WIDTH, 710))), # TODO this is hard coded? TODO Model is not used right now...
         ]
         self.tab_buttons = []
@@ -249,5 +250,5 @@ class FrameworkControlApp(Gtk.Window):
             if data and isinstance(data, dict) and 'overlays' in data and data['overlays']:
                 overlays.extend(data['overlays'])
 
-        print(overlays)
+        # print(overlays)
         return overlays
