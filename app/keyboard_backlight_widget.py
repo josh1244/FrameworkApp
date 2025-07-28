@@ -119,12 +119,15 @@ class KeyboardBacklightWidget(Gtk.Box, WidgetTemplate):
         self._debounce_id = None
 
     def update(self):
-        # Set data for UI overlays, if needed
+        # Set data for UI overlays, including keyboard LED overlay
+        brightness = int(self.scale.get_value())
         self.data = {
-            "brightness": int(self.scale.get_value()),
+            "brightness": brightness,
             "mode": self.modes[self.current_mode],
             "image_size": self.image_size,
-            # "overlays": []
+            "overlays": [
+                {"name": "keyboard_led", "path": "overlays/framework-keyboard-led-{overlay_id}.png", "color": (255, 255, 255, 255/100*brightness)}
+            ]
         }
 
     def update_visual(self):
