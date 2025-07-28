@@ -9,11 +9,11 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 from app.framework_model import get_framework_model
 from app.image_utils import load_scaled_image
-from app.power_profiles_controller import PowerProfilesController
+from app.power_profiles_widget import PowerProfilesWidget
 from app.expansion_cards import ExpansionCards
 from app.helpers import get_asset_path
 from app.model_image import ModelImage
-from app.keyboard_backlight import KeyboardBacklightBox
+from app.keyboard_backlight_widget import KeyboardBacklightWidget
 from app.sample_widget import SampleWidget
 from app.sleep_mode_widget import SleepModeWidget
 from app.led_widget import LedWidget
@@ -94,11 +94,11 @@ class FrameworkControlApp(Gtk.Window):
         # Define the tabs here (name, icon, widget)
         # All widgets should inherit from WidgetTemplate
         tab_items = [
-            ("Power", "battery-full-symbolic", PowerProfilesController()),
-            # ("Keyboard", "input-keyboard-symbolic", KeyboardBacklightBox()),
+            ("Power", "battery-full-symbolic", PowerProfilesWidget()),
             # ("Expansion", "media-flash-symbolic", ExpansionCards()),
             ("Sleep", "power-profile-power-saver-symbolic", SleepModeWidget()),
             ("LEDs", "dialog-information-symbolic", LedWidget()),
+            ("Keyboard", "keyboard-brightness-symbolic", KeyboardBacklightWidget()),
             ("Sample", "applications-system-symbolic", SampleWidget(self.model.name, (LAPTOP_WIDTH, 710))), # TODO this is hard coded? TODO Model is not used right now...
         ]
         self.tab_buttons = []

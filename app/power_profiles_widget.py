@@ -13,7 +13,7 @@ from gi.repository import Gtk, GLib
 from app.widget import WidgetTemplate
 
 
-class PowerProfilesController(Gtk.Box, WidgetTemplate):
+class PowerProfilesWidget(Gtk.Box, WidgetTemplate):
     '''Widget for displaying and changing power profiles.'''
 
     def __init__(self):
