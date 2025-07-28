@@ -10,7 +10,7 @@ from gi.repository import Gtk, GLib
 from app.framework_model import get_framework_model
 from app.image_utils import load_scaled_image
 from app.power_profiles_widget import PowerProfilesWidget
-from app.expansion_cards import ExpansionCards
+from app.expansion_cards_widget import ExpansionCardsWidget
 from app.helpers import get_asset_path
 from app.model_image import ModelImage
 from app.keyboard_backlight_widget import KeyboardBacklightWidget
@@ -18,6 +18,7 @@ from app.sample_widget import SampleWidget
 from app.sleep_mode_widget import SleepModeWidget
 from app.led_widget import LedWidget
 from app.power_status_widget import PowerStatusWidget
+from app.system_stats_widget import SystemStatsWidget
 
 UPDATE_INTERVAL_MS=5000
 LAPTOP_WIDTH=500
@@ -95,9 +96,10 @@ class FrameworkControlApp(Gtk.Window):
         # Define the tabs here (name, icon, widget)
         # All widgets should inherit from WidgetTemplate
         tab_items = [
+            ("Stats", "system-run-symbolic", SystemStatsWidget(model=self.model)),
             ("Power", "battery-full-symbolic", PowerProfilesWidget()),
             ("Battery", "battery-good-symbolic", PowerStatusWidget()),
-            # ("Expansion", "media-flash-symbolic", ExpansionCards()),
+            ("Expansion", "media-flash-symbolic", ExpansionCardsWidget()),
             ("Sleep", "power-profile-power-saver-symbolic", SleepModeWidget()),
             ("LEDs", "dialog-information-symbolic", LedWidget()),
             ("Keyboard", "keyboard-brightness-symbolic", KeyboardBacklightWidget()),

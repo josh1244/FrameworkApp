@@ -6,12 +6,13 @@ import sys
 class FrameworkModel:
     '''Data class for Framework model info'''
 
-    def __init__(self, board_name, name, image=None, ports=0, overlay_id=0):
+    def __init__(self, board_name, name, image=None, ports=0, overlay_id=0, cpu=None):
         self.board_name = board_name
         self.name = name
         self.image = image
         self.ports = ports
         self.overlay_id = overlay_id
+        self.cpu = cpu
 
 def get_framework_model():
     '''Retrieve the Framework model based on the board name from system files'''
@@ -25,10 +26,11 @@ def get_framework_model():
     models = {
         "FRANBMCP03": FrameworkModel(
             board_name="FRANBMCP03",
-            name="Framework Laptop 13 i5 11th Gen",
+            name="Framework Laptop 13 (2021)", #11th gen
             image="framework-laptop-13.png",
             ports=4,
-            overlay_id="13"
+            overlay_id="13",
+            cpu="Intel Core i5-1135G7"
         ),
         # Add more mappings as needed
     }

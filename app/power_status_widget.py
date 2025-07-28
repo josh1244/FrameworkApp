@@ -4,6 +4,7 @@ It inherits from Gtk.Box and implements the WidgetTemplate interface.
 '''
 
 import os
+from PIL import Image, ImageDraw, ImageFont
 from gi.repository import Gtk, GLib
 from app.widget import WidgetTemplate
 
@@ -22,12 +23,20 @@ class PowerStatusWidget(Gtk.Box, WidgetTemplate):
 
     def update(self):
         '''Update method called by ui.py'''
-        
         stats = self.get_battery_stats()
+        
+        overlays = []
+
+        # Draw lightning bolt icon if charging
+        status = stats['status'] if stats['status'] is not None else 'Unknown'
+        if status.lower() == 'charging':
+            overlays.append({"name": "charging_icon", "path": "overlays/framework-charging-{overlay_id}.png", "color": (0, 255, 0, 255)})
+
         self.data = {
             "percentage": stats['percentage'],
             "status": stats['status'],
-            "health": stats['health']
+            "health": stats['health'],
+            "overlays": overlays
         }
 
     def update_visual(self):
