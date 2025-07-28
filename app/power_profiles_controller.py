@@ -19,16 +19,21 @@ class PowerProfilesController(Gtk.Box, WidgetTemplate):
     def __init__(self):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=10)
         WidgetTemplate.__init__(self)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        self.add(box)
+
+    
         self.label = Gtk.Label(label="Power Profile: ...", xalign=0)
         self.label.set_justify(Gtk.Justification.LEFT)
         self.label.set_halign(Gtk.Align.START)
-        Gtk.Box.pack_start(self, self.label, True, True, 0)
+        box.pack_start(self.label, False, False, 0)
         self.data = None
 
         # Setup Power profiles controller
         self.combo = Gtk.ComboBoxText()
         self._combo_handler_id = self.combo.connect("changed", self.on_profile_changed)
-        self.pack_start(self.combo, False, False, 0)
+        box.pack_start(self.combo, False, False, 0)
         self.proxy = None
         self.backend = None  # 'ppd' or 'tuned'
         self.profile_map = {}  # name -> display string
@@ -83,7 +88,7 @@ class PowerProfilesController(Gtk.Box, WidgetTemplate):
                 current_from_list = None
                 allowed_profiles = {
                     "powersave": "Powersave",
-                    "balanced": "Balanced",
+                    "balanced-battery": "Balanced",
                     "throughput-performance": "Performance"
                 }
                 for line in result.stdout.splitlines():

@@ -172,8 +172,8 @@ class FrameworkControlApp(Gtk.Window):
         tab_and_content_container.pack_start(main_and_image_container, True, True, 0)
 
         # Update at init
-        self.update_loop()
-
+        GLib.idle_add(self.update_loop)
+        
         # Start update loop
         GLib.timeout_add(UPDATE_INTERVAL_MS, self._periodic_update)
 
@@ -185,24 +185,26 @@ class FrameworkControlApp(Gtk.Window):
     def update_loop(self):
         '''A single update loop that gets all the info'''
         # Update all widgets and store their data
+        visible_name = self.widget_stack.get_visible_child_name()
         for name, widget in self.widgets.items():
             try:
+                # Update the widget data
                 widget.update()
                 self.widgets_data[name] = getattr(widget, 'data', None)
+
+                # Update the current visible widget's UI
+                if visible_name in self.widgets:
+                    try:
+                        self.widgets[visible_name].update_visual()
+                    except Exception as e:
+                        print(f"Error updating visual for widget {visible_name}: {e}")
             except NotImplementedError as e:
                 print(f"{name} has not implemented update! {e}")
                 self.widgets_data[name] = None
+
             except (AttributeError, RuntimeError) as e:
                 print(f"{name} does not use the Widget Class! {e}")
                 self.widgets_data[name] = None
-
-        # Update the visual for the currently visible widget
-        visible_name = self.widget_stack.get_visible_child_name()
-        if visible_name and visible_name in self.widgets:
-            try:
-                self.widgets[visible_name].update_visual()
-            except Exception as e:
-                print(f"Error updating visual for widget {visible_name}: {e}")
 
         # Update laptop image overlays
         overlays = self.get_all_widget_overlays()
@@ -227,6 +229,14 @@ class FrameworkControlApp(Gtk.Window):
             b.set_active(i == idx)
             b.handler_unblock(handler_id)
         self.widget_stack.set_visible_child_name(name)
+
+        # Update the current widget
+        if name and name in self.widgets:
+            try:
+                self.widgets[name].update_visual()
+            except Exception as e:
+                print(f"Error updating visual for widget {name}: {e}")
+
 
     def get_all_widget_overlays(self):
         """
