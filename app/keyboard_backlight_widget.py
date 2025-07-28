@@ -42,10 +42,7 @@ class KeyboardBacklightWidget(Gtk.Box, WidgetTemplate):
         self._debounce_id = None
         self._daemon_proc = None
 
-        self.update()
-        self.update_visual()
-        self._update_scale_from_ectool()
-
+  
     def _update_scale_from_ectool(self):
         def worker():
             current_value = 0
@@ -120,6 +117,7 @@ class KeyboardBacklightWidget(Gtk.Box, WidgetTemplate):
 
     def update(self):
         # Set data for UI overlays, including keyboard LED overlay
+        
         brightness = int(self.scale.get_value())
         self.data = {
             "brightness": brightness,
@@ -132,6 +130,7 @@ class KeyboardBacklightWidget(Gtk.Box, WidgetTemplate):
 
     def update_visual(self):
         # Update label with current brightness and mode
+        
         if self.data:
             self.label.set_text(f"Keyboard Backlight\nBrightness: {self.data['brightness']}%\nMode: {self.data['mode']}")
         else:

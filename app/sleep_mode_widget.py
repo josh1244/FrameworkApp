@@ -36,8 +36,6 @@ class SleepModeWidget(Gtk.Box, WidgetTemplate):
         self.button.connect("clicked", self.on_set_mode_clicked)
         box.pack_start(self.button, False, False, 0)
 
-        self.update()
-        self.update_visual()
 
     def on_set_mode_clicked(self, _):
         '''Handle button click to set sleep mode'''
@@ -98,7 +96,7 @@ class SleepModeWidget(Gtk.Box, WidgetTemplate):
 
     def update_visual(self):
         '''Update the visual representation of the widget called by ui.py'''
-        
+
         self.current_mode = self.get_current_sleep_mode()
         if self.current_mode:
             self.label.set_text(f"Current sleep mode: {self.current_mode}")

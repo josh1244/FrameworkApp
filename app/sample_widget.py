@@ -22,9 +22,6 @@ class SampleWidget(Gtk.Box, WidgetTemplate):
         self.model = model
         self.image_size = image_size
 
-        # Update at init
-        self.update()
-        self.update_visual()
 
     def update(self):
         '''Update method called by ui.py'''
