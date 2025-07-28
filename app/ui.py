@@ -158,7 +158,7 @@ class FrameworkControlApp(Gtk.Window):
         laptop_image_box.set_valign(Gtk.Align.CENTER)
 
         if self.model.image:
-            self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH)
+            self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH, overlay_id=self.model.overlay_id)
             self.model_img_parent = laptop_image_box
             laptop_image_box.pack_start(self.model_img_widget, False, False, 0)
         else:
@@ -212,7 +212,7 @@ class FrameworkControlApp(Gtk.Window):
             if self.model_img_widget:
                 self.model_img_parent.remove(self.model_img_widget)
             # Create new ModelImage with overlays
-            self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH, overlays=overlays)
+            self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH, overlays=overlays, overlay_id=self.model.overlay_id)
             self.model_img_parent.pack_start(self.model_img_widget, False, False, 0)
             self.model_img_parent.show_all()
 

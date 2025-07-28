@@ -131,9 +131,9 @@ class LedControlBox(Gtk.Box):
 
         # Map led_name to overlay image filename
         overlay_map = {
-            "left": "overlays/framework11-left-led.png",
-            "power": "overlays/framework11-power-led.png",
-            "right": "overlays/framework11-right-led.png"
+            "left": "overlays/framework-left-led-{overlay_id}.png",
+            "power": "overlays/framework-power-led-{overlay_id}.png",
+            "right": "overlays/framework-right-led-{overlay_id}.png"
         }
         img_name = overlay_map.get(self.led_name.lower())
         # Map color names to RGB values (customize as needed)

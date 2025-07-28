@@ -6,7 +6,7 @@ from app.helpers import get_asset_path
 
 class ModelImage(Gtk.Box):
     '''Widget to display the laptop model image.'''
-    def __init__(self, image_name, image_size=320, overlays=None):
+    def __init__(self, image_name, image_size=320, overlays=None, overlay_id=13):
         """
         overlays: list of dicts, each dict has keys:
             'name': image name (str)
@@ -17,6 +17,7 @@ class ModelImage(Gtk.Box):
         self.image_name = image_name
         self.image_size = image_size
         self.overlays = overlays or []
+        self.overlay_id = overlay_id
         self._build_ui()
 
     def _build_ui(self):
@@ -37,11 +38,14 @@ class ModelImage(Gtk.Box):
             overlay.add(Gtk.Label(label="[No Image]"))
         # Add overlays with optional color filter
         for overlay_info in self.overlays:
-            # "overlays": [{"name": "time", "path": "overlays/framework11-time.png", "color": None}]
+            # "overlays": [{"name": "left-led", "path": "overlays/framework-left-led-{overlay_id}.png", "color": None}]
 
             overlay_name = overlay_info.get('name')
-            overlay_path = overlay_info.get('path')
+            overlay_path = overlay_info.get('path')  # overlays/framework-time.png -> overlays/framework-time.png-{overlay_id}.png
             color = overlay_info.get('color')
+            # If overlay_id is needed in the filename, insert it before the extension
+            if '{overlay_id}' in overlay_path:
+                overlay_path = overlay_path.format(overlay_id=self.overlay_id)
             overlay_path = get_asset_path(overlay_path)
             if color:
                 overlay_img_widget = colorize_image(overlay_path, self.image_size, color)

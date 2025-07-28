@@ -27,16 +27,40 @@ class SampleWidget(Gtk.Box, WidgetTemplate):
         self.update_visual()
 
     def update(self):
+        '''Update method called by ui.py'''
+
+        time = self.generate_time_image()
+
+        # Set data with overlays key for the UI
+        self.data = {
+            "time": time.isoformat(),
+            "image_size": self.image_size,
+            "overlays": [{"name": "time", "path": "overlays/framework-time.png", "color": None}]
+        }
+
+    def update_visual(self):
+        '''Update the visual representation of the widget called by ui.py'''
+
+        # Update the label with the latest data
+        if self.data:
+            self.label.set_text(f"Sample Widget\nTime: {self.data['time']}")
+        else:
+            self.label.set_text("Sample Widget\nNo data yet.")
+
+    def generate_time_image(self):
+        '''Generate a time image overlay'''
+
         # Generate current time string
         now = datetime.datetime.now()
-        time_str = now.strftime("%H:%M:%S")
+        # H:mm am/pm
+        time_str = now.strftime("%I:%M %p")
 
         # Use passed image size
         width, height = self.image_size
 
         # Generate overlay image with the current time
         overlay_dir = os.path.join(os.path.dirname(__file__), './assets/overlays')
-        overlay_path = os.path.abspath(os.path.join(overlay_dir, 'framework11-time.png'))
+        overlay_path = os.path.abspath(os.path.join(overlay_dir, 'framework-time.png'))
 
         # Create a transparent image (size should match overlay requirements)
         img = Image.new('RGBA', (width, height), (0, 0, 0, 0))
@@ -64,16 +88,4 @@ class SampleWidget(Gtk.Box, WidgetTemplate):
         os.makedirs(os.path.dirname(overlay_path), exist_ok=True)
         img.save(overlay_path)
 
-        # Set data with overlays key for the UI
-        self.data = {
-            "time": now.isoformat(),
-            "image_size": self.image_size,
-            "overlays": [{"name": "time", "path": "overlays/framework11-time.png", "color": None}]
-        }
-
-    def update_visual(self):
-        # Update the label with the latest data
-        if self.data:
-            self.label.set_text(f"Sample Widget\nTime: {self.data['time']}")
-        else:
-            self.label.set_text("Sample Widget\nNo data yet.")
+        return now
