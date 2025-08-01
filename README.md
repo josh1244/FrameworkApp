@@ -22,7 +22,7 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 
 - [x] Detects Model
 - [x] ectool Installer
-- [ ] Interactive Computer Image
+- [x] Interactive Computer Image
 - [ ] LED controls
 - - [x] Control left, right, power LEDS
 - - [x] On/Off/Auto
@@ -36,7 +36,7 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - - [x] Charge Percentage
 - - [x] Charge State
 - - [x] Health
-- - [ ] Display on image
+- - [x] Display on image
 - [ ] Ports
 - - [ ] Which port is connected to power
 - - [x] Which ports are connected to laptop
@@ -50,12 +50,13 @@ A GTK-based desktop application for controlling and monitoring Framework Laptop 
 - - [ ] Autobrightness
 - - [x] Patterns
 - [ ] LED and keyboard Scripts
-- [ ] Sleep Mode
-- - [ ] Display current mode
-- - [ ] Toggle Mode
-- [ ] Show OS on display on image
+- [x] Sleep Mode
+- - [x] Display current mode
+- - [x] Toggle Mode
+- [x] Show OS on display on image
 - - [ ] Brightness should change it
-- [ ] App is very slow now with image updating. I need to redo the architecture, so there is a single update loop with variable update timer. It needs to be more modular and less spaghetti
+- [x] App is very slow now with image updating. I need to redo the architecture, so there is a single update loop with variable update timer. It needs to be more modular and less spaghetti
+- [ ] Persist changes after reboot
 
 ## Requirements
 
