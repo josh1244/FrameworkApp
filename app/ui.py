@@ -1,18 +1,24 @@
-'''
-Framework Control App
-This application provides control features for Framework Laptops.
-It displays the laptop model and allows for various controls.
-'''
 
+# Framework Control App
+# This application provides control features for Framework Laptops.
+# It displays the laptop model and allows for various controls.
+
+
+# Standard library
+import concurrent.futures
+
+# Third-party
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
+
+# Local application imports
 from app.framework_model import get_framework_model
+from app.helpers import get_asset_path
 from app.image_utils import load_scaled_image
+from app.model_image import ModelImage
 from app.power_profiles_widget import PowerProfilesWidget
 from app.expansion_cards_widget import ExpansionCardsWidget
-from app.helpers import get_asset_path
-from app.model_image import ModelImage
 from app.keyboard_backlight_widget import KeyboardBacklightWidget
 from app.sample_widget import SampleWidget
 from app.sleep_mode_widget import SleepModeWidget
@@ -78,6 +84,7 @@ class FrameworkControlApp(Gtk.Window):
         self.model_img_widget = None
         self.model_img_parent = None
         self.current_widget = None
+        self._last_overlays = None  # Cache for overlays
 
 
 
@@ -176,52 +183,69 @@ class FrameworkControlApp(Gtk.Window):
         # Now pack main_and_image_container into tab_and_content_container
         tab_and_content_container.pack_start(main_and_image_container, True, True, 0)
 
+        # Thread pool for async updates
+        self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+
         # Update at init
         GLib.idle_add(self.update_loop)
-        
+
         # Start update loop
         GLib.timeout_add(UPDATE_INTERVAL_MS, self._periodic_update)
 
+
     def _periodic_update(self):
-        self.update_loop()
+        # Run update_loop in a background thread
+        self._executor.submit(self._background_update_loop)
         return True
 
-    # Update loop function
-    def update_loop(self):
-        '''A single update loop that gets all the info'''
-        # Update all widgets and store their data
+    def _background_update_loop(self):
+        # Run the heavy update logic in a thread, then schedule UI update on main thread
         visible_name = self.widget_stack.get_visible_child_name()
+        widgets_data = {}
+        update_errors = {}
         for name, widget in self.widgets.items():
             try:
                 # Update the widget data
                 widget.update()
-                self.widgets_data[name] = getattr(widget, 'data', None)
-
-                # Update the current visible widget's UI
-                if visible_name in self.widgets:
-                    try:
-                        self.widgets[visible_name].update_visual()
-                    except Exception as e:
-                        print(f"Error updating visual for widget {visible_name}: {e}")
+                widgets_data[name] = getattr(widget, 'data', None)
             except NotImplementedError as e:
-                print(f"{name} has not implemented update! {e}")
-                self.widgets_data[name] = None
-
+                update_errors[name] = f"NotImplementedError: {e}"
+                widgets_data[name] = None
             except (AttributeError, RuntimeError) as e:
-                print(f"{name} does not use the Widget Class! {e}")
-                self.widgets_data[name] = None
+                update_errors[name] = f"Error: {e}"
+                widgets_data[name] = None
 
-        # Update laptop image overlays
+        # Schedule UI update on main thread
+        GLib.idle_add(self._finish_update_loop, widgets_data, visible_name)
+
+    def _finish_update_loop(self, widgets_data, visible_name):
+        # Update widgets_data and call update_visual for visible widget
+        self.widgets_data = widgets_data
+        if visible_name in self.widgets:
+            try:
+                self.widgets[visible_name].update_visual()
+            except Exception as e:
+                print(f"Error updating visual for widget {visible_name}: {e}")
+
+        # Update laptop image overlays only if overlays have changed
         overlays = self.get_all_widget_overlays()
-        # Recreate the model image widget with overlays and update the UI
-        if self.model.image and self.model_img_parent:
-            # Remove the old image widget if it exists
-            if self.model_img_widget:
-                self.model_img_parent.remove(self.model_img_widget)
-            # Create new ModelImage with overlays
-            self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH, overlays=overlays, overlay_id=self.model.overlay_id)
-            self.model_img_parent.pack_start(self.model_img_widget, False, False, 0)
-            self.model_img_parent.show_all()
+        if overlays != self._last_overlays:
+            self._last_overlays = list(overlays) if overlays is not None else None
+            if self.model.image and self.model_img_parent:
+                # Remove the old image widget if it exists
+                if self.model_img_widget:
+                    self.model_img_parent.remove(self.model_img_widget)
+                # Create new ModelImage with overlays
+                self.model_img_widget = ModelImage(self.model.image, image_size=LAPTOP_WIDTH, overlays=overlays, overlay_id=self.model.overlay_id)
+                self.model_img_parent.pack_start(self.model_img_widget, False, False, 0)
+                self.model_img_parent.show_all()
+        return False  # Only run once per call
+
+    # Update loop function
+    def update_loop(self):
+        '''A single update loop that gets all the info'''
+        # For backward compatibility, run the background update loop
+        self._executor.submit(self._background_update_loop)
 
     # Sidebar tab button function
     def on_tab_clicked(self, _btn, idx, name):
@@ -250,9 +274,8 @@ class FrameworkControlApp(Gtk.Window):
         Returns a list of overlays from all widgets.
         """
         overlays = []
-        for name, data in self.widgets_data.items():
+        for _name, data in self.widgets_data.items():
             if data and isinstance(data, dict) and 'overlays' in data and data['overlays']:
                 overlays.extend(data['overlays'])
 
-        # print(overlays)
         return overlays
