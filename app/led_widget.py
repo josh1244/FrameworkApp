@@ -102,7 +102,6 @@ class LedWidget(Gtk.Box, WidgetTemplate):
     def _run_led_command(self, led_name, value):
         # Map mode/color to ectool command
         cmd = ["pkexec", "/usr/bin/ectool", "led", led_name, value]
-        print("Running:", " ".join(cmd))
         subprocess.run(cmd, check=False)
 
     def update(self):
@@ -114,6 +113,8 @@ class LedWidget(Gtk.Box, WidgetTemplate):
             self.data = {
                 "overlays": overlays
             }
+        else:
+            self.data = None
 
     def update_visual(self):
         '''Update the visual representation of the widget called by ui.py'''
@@ -142,7 +143,8 @@ class LedWidget(Gtk.Box, WidgetTemplate):
         if not led:
             return None
         color = led["current_color"].lower()
-        if color == "off":
+        state = led["current_mode"].lower()
+        if state in ("off", "auto"):
             return None
         img_name = overlay_map.get(led_name)
         color_rgba = color_map.get(color, (255, 255, 255, 255))
