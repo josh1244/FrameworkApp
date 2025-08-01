@@ -5,8 +5,7 @@ It is a Gtk.Box and implements the WidgetTemplate interface for integration with
 '''
 
 import subprocess
-import re
-from gi.repository import Gtk, GLib
+from gi.repository import Gtk
 from app.image_utils import load_scaled_image
 from app.helpers import get_asset_path
 from app.widget import WidgetTemplate
@@ -36,33 +35,25 @@ class ExpansionCardsWidget(Gtk.Box, WidgetTemplate):
         self._build_ui()
         self.data = None
         
-        # Initialize the widget with the current expansion cards
-        self.update()
-        self.update_visual()
 
     def _build_ui(self):
         self.left_ports_vbox.set_halign(Gtk.Align.CENTER)
         self.left_ports_vbox.set_valign(Gtk.Align.CENTER)
-        # self.left_ports_vbox.set_margin_bottom(50)
 
         self.right_ports_vbox.set_halign(Gtk.Align.CENTER)
         self.right_ports_vbox.set_valign(Gtk.Align.CENTER)
-        # self.right_ports_vbox.set_margin_bottom(50)
 
         Gtk.Box.pack_start(self, self.left_ports_vbox, False, False, 0)
         Gtk.Box.pack_start(self, self.center_space, False, False, 0)
         Gtk.Box.pack_start(self, self.right_ports_vbox, False, False, 0)
 
-    def _periodic_update(self):
-        self.update()
-        return True
 
     def update(self):
-        '''Update the detected expansion cards.'''
+        '''Update the detected expansion cards and check for laptop camera.'''
         result = ["expansion_card_usb_c.png"] * self.ports
+        camera_found = False
         try:
             lsusb = subprocess.run(["lsusb"], capture_output=True, text=True, check=True)
-            lsusb_t = subprocess.run(["lsusb", "-t"], capture_output=True, text=True, check=True)
             port_map = {
                 "001": 1, # Top right port
                 "002": 2, 
@@ -70,19 +61,11 @@ class ExpansionCardsWidget(Gtk.Box, WidgetTemplate):
                 "004": 2,
                 "005": 2,
                 "006": 0, # Top left port
-                }
+            }
             dev_to_port = {}
-            current_bus = None
-            for tline in lsusb_t.stdout.splitlines():
-                m = re.match(r"/:  Bus (\d+)\.Port (\d+): Dev (\d+),", tline)
-                if m:
-                    current_bus = m.group(1)
-                m2 = re.match(r"\s*\|__ Port (\d+): Dev (\d+),", tline)
-                if m2 and current_bus:
-                    port = m2.group(1).zfill(3)
-                    devnum = m2.group(2).zfill(3)
-                    dev_to_port[(current_bus, devnum)] = port
             for line in lsusb.stdout.splitlines():
+                if "Realtek Semiconductor Corp. Laptop Camera" in line:
+                    camera_found = True
                 parts = line.strip().split()
                 label_line = line.strip()
                 extra_label = None
@@ -116,7 +99,13 @@ class ExpansionCardsWidget(Gtk.Box, WidgetTemplate):
             print(f"Error occurred while getting connected expansion cards: {e}")
         self.result = result
         self.data = {"expansion_cards": result}
-        self.update_visual()
+        # Add overlays key if camera not found
+        if not camera_found:
+            self.data["overlays"] = [{
+                "name": "camera_off",
+                "path": "overlays/framework-camera-off-{overlay_id}.png",
+                "color": None
+            }]
 
     def update_visual(self):
         '''Update UI'''
