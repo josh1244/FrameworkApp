@@ -31,9 +31,9 @@ class PowerProfilesWidget(Gtk.Box, WidgetTemplate):
         self.data = None
 
         # Setup Power profiles controller
-        self.combo = Gtk.ComboBoxText()
-        self._combo_handler_id = self.combo.connect("changed", self.on_profile_changed)
-        box.pack_start(self.combo, False, False, 0)
+        self.button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        box.pack_start(self.button_box, False, False, 0)
+        self.profile_buttons = {}
         self.proxy = None
         self.backend = None  # 'ppd' or 'tuned'
         self.profile_map = {}  # name -> display string
@@ -50,8 +50,7 @@ class PowerProfilesWidget(Gtk.Box, WidgetTemplate):
 
         # Get the data at init
         self.update()
-        self._populate_combo()
-        self.update_visual()
+        self._populate_buttons()
 
     def update(self):
         '''Update method called by ui.py'''
@@ -82,6 +81,8 @@ class PowerProfilesWidget(Gtk.Box, WidgetTemplate):
                     for line in result.stdout.splitlines():
                         if 'Current active profile:' in line:
                             current = line.split(':', 1)[1].strip()
+                            if current == "balanced":
+                                current = "balanced-battery"
                 # Get available profiles
                 result = subprocess.run(['tuned-adm', 'list'], capture_output=True, text=True, check=False)
                 profile_map = {}  # name -> display string
@@ -118,18 +119,56 @@ class PowerProfilesWidget(Gtk.Box, WidgetTemplate):
         }
 
 
+    def _populate_buttons(self):
+        """Populate the button box with profile buttons."""
+        for child in self.button_box.get_children():
+            self.button_box.remove(child)
+        self.profile_buttons = {}
+        self.profile_button_handlers = {}
+        # Define icons for each profile
+        icon_map = {
+            "powersave": "power-profile-power-saver-symbolic",
+            "balanced-battery": "power-profile-balanced-symbolic",
+            "throughput-performance": "power-profile-performance-symbolic"
+        }
+        for profile in ["powersave", "balanced-battery", "throughput-performance"]:
+            display = self.profile_map.get(profile, profile)
+            btn = Gtk.ToggleButton()
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+            # Icon
+            icon_name = icon_map.get(profile, None)
+            if icon_name:
+                img = Gtk.Image.new_from_icon_name(icon_name, Gtk.IconSize.BUTTON)
+                hbox.pack_start(img, False, False, 0)
+            # Text
+            lbl = Gtk.Label(label=display)
+            hbox.pack_start(lbl, False, False, 0)
+            btn.add(hbox)
+            handler_id = btn.connect("toggled", self.on_profile_button_toggled, profile)
+            self.profile_button_handlers[profile] = handler_id
+            self.button_box.pack_start(btn, False, False, 0)
+            self.profile_buttons[profile] = btn
+        self.button_box.show_all()
+        self.update_visual()  # Ensure selection is shown after populating buttons
+
+
     def update_visual(self):
         '''Update the visual representation of the widget called by ui.py'''
         if not self.data or not self.data.get('profiles'):
-            self.combo.set_active(-1)
+            for btn in self.profile_buttons.values():
+                btn.set_sensitive(False)
+                btn.set_active(False)
             return
         profiles = self.data['profiles']
         current = self.data['current']
-        if current and current in profiles:
-            self.combo.set_active(profiles.index(current))
-        else:
-            self.combo.set_active(-1)
-
+        for name, btn in self.profile_buttons.items():
+            btn.set_sensitive(name in profiles)
+            handler_id = self.profile_button_handlers.get(name)
+            if handler_id is not None:
+                btn.handler_block(handler_id)
+            btn.set_active(name == current)
+            if handler_id is not None:
+                btn.handler_unblock(handler_id)
 
     def _init_backend(self):
         '''Figures out which backend to use for power profiles.'''
@@ -167,49 +206,50 @@ class PowerProfilesWidget(Gtk.Box, WidgetTemplate):
         print("[PowerProfilesController] No supported power profile backend found (power-profiles-daemon or tuned)")
         self.label.set_text("No supported power profile backend found (power-profiles-daemon or tuned)")
 
-    def _populate_combo(self):
-        """Populate the combo box with available profiles."""
-        self.combo.remove_all()
+    def on_profile_button_toggled(self, button, profile):
+        '''Handle profile button toggled.'''
         if not self.data or not self.data.get('profiles'):
             return
-        for profile in self.data['profiles']:
-            display = self.profile_map.get(profile, profile)
-            self.combo.append_text(display)
-
-
-    def on_profile_changed(self, combo):
-        '''Handle profile selection change from the combo box.'''
-        if not self.data or not self.data.get('profiles'):
+        if profile not in self.data['profiles']:
             return
-        idx = combo.get_active()
-        profiles = self.data['profiles']
-        if idx < 0 or idx >= len(profiles):
+        if not button.get_active():
+            # Prevent unselecting the active button (only one can be active)
+            handler_id = self.profile_button_handlers.get(profile)
+            if handler_id is not None:
+                button.handler_block(handler_id)
+            button.set_active(True)
+            if handler_id is not None:
+                button.handler_unblock(handler_id)
             return
-        selected = profiles[idx]
-        self.data['current'] = selected  # Update current profile in data
+        self.data['current'] = profile  # Update current profile in data
+        # Unset all other buttons
+        for name, btn in self.profile_buttons.items():
+            if name != profile:
+                handler_id = self.profile_button_handlers.get(name)
+                if handler_id is not None:
+                    btn.handler_block(handler_id)
+                btn.set_active(False)
+                if handler_id is not None:
+                    btn.handler_unblock(handler_id)
 
         if self.backend == 'ppd':
             if not self.proxy:
                 return
             try:
-                self.proxy.Set('net.hadess.PowerProfiles', 'ActiveProfile', selected)
+                self.proxy.Set('net.hadess.PowerProfiles', 'ActiveProfile', profile)
             except (AttributeError, OSError) as e:
                 print(f"[PowerProfilesController] Failed to set power profile: {e}")
                 self.label.set_text("Failed to set profile. Do you have permission?")
         elif self.backend == 'tuned':
             try:
-                result = subprocess.run(['tuned-adm', 'profile', selected], capture_output=True, text=True, check=False)
+                result = subprocess.run(['tuned-adm', 'profile', profile], capture_output=True, text=True, check=False)
                 if result.returncode != 0:
                     err = result.stderr.strip() or result.stdout.strip()
                     if 'does not exist' in err:
-                        self.label.set_text(f"Requested profile does not exist: {selected}")
+                        self.label.set_text(f"Requested profile does not exist: {profile}")
                     else:
                         self.label.set_text(f"Failed to set tuned profile: {err}")
-
-                # Always refresh after attempting to set
-                self.update_visual()
             except (subprocess.CalledProcessError, OSError) as e:
                 print(f"[PowerProfilesController] Failed to set tuned profile: {e}")
                 self.label.set_text("Failed to set tuned profile.")
-                self.update_visual()
 
