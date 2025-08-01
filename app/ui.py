@@ -107,7 +107,6 @@ class FrameworkControlApp(Gtk.Window):
             ("Power", "battery-full-symbolic", PowerProfilesWidget()),
             ("Battery", "battery-good-symbolic", PowerStatusWidget()),
             ("Expansion", "media-flash-symbolic", ExpansionCardsWidget()),
-            ("Sleep", "power-profile-power-saver-symbolic", SleepModeWidget()),
             ("LEDs", "dialog-information-symbolic", LedWidget()),
             ("Keyboard", "keyboard-brightness-symbolic", KeyboardBacklightWidget()),
             ("Sample", "applications-system-symbolic", SampleWidget(self.model.name, (LAPTOP_WIDTH, 710))), # TODO this is hard coded? TODO Model is not used right now...
